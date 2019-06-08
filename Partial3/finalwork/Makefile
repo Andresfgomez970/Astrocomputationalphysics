@@ -2,9 +2,9 @@
 OPT   +=  -DCONTINUIDAD
 
 CC = gcc
-UBICATIONGSL=/home/andres/local
+UBICATIONGSL = /home/andres/local
 #CFLAGS = -I. -g -Wall -I$(UBICATIONGSL)/include
-CFLAGS = -I. -Wall -I$(UBICATIONGSL)/include $(OPT)
+CFLAGS = -I. -Wall -I$(UBICATIONGSL)/include -I$(UBICATIONGSL)/include/gsl $(OPT)
 LFLAGS = -lm -L$(UBICATIONGSL)/lib -lgsl -lgslcblas 
 OBJS = main.o allvars.o ics.o aloca.o kernel.o rutinas_sph.o allvars.h proto.h
 EXEC = sph2.out

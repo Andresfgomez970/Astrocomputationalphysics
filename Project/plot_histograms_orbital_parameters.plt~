@@ -22,7 +22,7 @@ do for [i=1:6] {
    id2 = sprintf("awk '%s' %s",l2,fileparam)
    id = system(id)
    id2 = system(id2)
-   binwidth = (id2-id)/( 1 + log(ARG2)/log(2) )
+   binwidth = (id2-id)/( (ARG2)**(0.33333333333)*2 )
    bin(x,width) = width*floor(x/width) + width/2.0
    set boxwidth binwidth
    set xrange [id:id2]

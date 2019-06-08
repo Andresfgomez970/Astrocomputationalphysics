@@ -180,15 +180,30 @@ int main(int argc, char *argv[])
   /// Example 8
   ////////////////////////////////////////// 
 
-  double UT = 58.126363714904336;
-  double t_peri = 366.25/UT; 
+  //double UT = 58.126363714904336;
+  //double t_peri = 366.25/UT; 
+
+  /* Sun-Earth System
   double x = 0, vz = 1.0168445783306999, y=0.983223592;                                                                                    
   double mu= 1 + 1e-5 ;                                                                                                                   
-  int N = 11;
+  */
+
+  double x=17.95,y=-17.47, vz = 192;
+  double mu = 43007.1*(81.55);
+
+  int N = atoi(argv[1]);
+
+  if (argc<2){
+    printf("No parateter was enetered for the Number of points along an axis \n%d",argc);
+    exit(0); 
+  }
+  
+  printf("The number of particle points along each axis is: %d\n", N); 
+  
   char* directory="data/montecarlo/densities/";         
   size_t Npoints = 1000000;
+
   
-  //printf("Maximum integer: %lld\n",ULLONG_MAX);
   Chi_Square_Euler( x, y, vz, mu,  N, directory, Npoints);
   
 

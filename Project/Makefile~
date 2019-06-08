@@ -13,7 +13,7 @@ Main: $(OBJ) $(DEPS)
 runmain: Main
 	./$(EXEC) 
 
-runmain25: Main
+runmain: Main
 	./$(EXEC) 25
 
 run_example1: runmain

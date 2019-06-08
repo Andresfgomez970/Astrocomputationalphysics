@@ -75,8 +75,12 @@ int r_final_uniform(double x, double y, double vz, double mu, double t_peri,  in
   
 int Chi_Square_Euler(double x, double y, double vz, double mu,  int N, char * directory, size_t Npoints)
 { 
-  double rmin = 0.6, rmax = 10, fmin = 0, fmax= 2*M_PI, emin=0, emax=10, imin= -M_PI/2,
-    imax = M_PI/2, wmin = 0, wmax = 2*M_PI, Wmin = 0,Wmax = 2*M_PI;
+  //double rmin = 0.6, rmax = 10, fmin = 0, fmax= 2*M_PI, emin=0, emax=10, imin= -M_PI/2,
+  //  imax = M_PI/2, wmin = 0, wmax = 2*M_PI, Wmin = 0,Wmax = 2*M_PI;
+
+  double rmin = 0.6, rmax = 60, fmin = 0, fmax= 2*M_PI, emin=0, emax=10, imin= -M_PI/2,
+    imax = M_PI/2, wmin = 0, wmax = 2*M_PI, Wmin = 0,Wmax = 2*M_PI;   
+
   // Note that division is taken by N-1 to incude the borders
   double rminstep=(rmax-rmin)/(N-1),fstep=(fmax-fmin)/(N-1), estep=(emax-emin)/(N-1), istep=(imax-imin)/(N-1)
     , wstep=(wmax-wmin)/(N-1), Wstep=(Wmax-Wmin)/(N-1); 
@@ -108,9 +112,9 @@ int Chi_Square_Euler(double x, double y, double vz, double mu,  int N, char * di
   orbital_param = (orbital_Param *) malloc( total_config * sizeof(orbital_Param)  );
   //double r_square[total_config];  
   double *r_square; //Save distance
-  r_square = (double *) malloc( (size_t) total_config * sizeof(double) ); 
+  r_square = (double *) malloc( total_config * sizeof(double) ); 
   long long unsigned int steps; 
-    
+  
   for(j=0; j < total_config; j++)
     {
       dummy = j;
@@ -142,6 +146,7 @@ int Chi_Square_Euler(double x, double y, double vz, double mu,  int N, char * di
 	    //printf("(%lld, %lf)\n", steps ,  orbital_param[j].W );
 	  }
        	  dummy = dummy/N;
+
 	}
 
        
