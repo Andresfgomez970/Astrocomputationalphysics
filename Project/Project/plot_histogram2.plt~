@@ -1,0 +1,11 @@
+
+filename = sprintf("%s.dat",ARG1)
+
+binwidth = ARG2 #0.00018
+bin(x,width)=width*floor(x/width) + width/2.0
+set boxwidth binwidth
+title = "\n Histogram with erros in parameters \n (z,vx,vy) of 10 percent when v=(0,0,1)"  
+
+#set xrange [0.8:1.1]
+
+plot filename  using (bin($1,binwidth)):(1.0) smooth freq with boxes title title

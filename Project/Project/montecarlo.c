@@ -1,0 +1,277 @@
+#include "montecarlo.h"
+
+// Probability of finding particles in a same portion of area in the sky is constant
+//  such probability can be writen as a function of theta as follows:   
+
+double Sky_Function(double theta, double R)
+{
+  return (1./4*M_PI*R*R)*sin(theta);
+}
+
+
+int Syntetic_Sky( int N, char* directory , char* filename, char* method){									
+
+  int i = 0 ; // to count the number of points that have been saved and number of them saved in file
+  double x[N],y[N],z[N]; // arrays to save positions to be then save in a file
+  double maxfunc, theta, R, valfunc, alpha; // parameters to evalute the rejection 
+  FILE *stream_output, *stream_output_info; 
+  char outputname[200];
+  
+  sprintf(outputname,"%s%s.dat",directory,filename);
+  stream_output = fopen(outputname,"wb");
+
+  sprintf(outputname,"%s%s.param",directory,filename);
+  stream_output_info = fopen(outputname,"w");
+  
+  R = 1; // The radius is fixed to one; it was used explicitly only to make clear the theory
+  maxfunc = Sky_Function(M_PI/2,R)*1.5; //Multiply by 1.5 to ommit computer errors 
+
+  if ( strcmp(method,"rejection")==0 )
+    {
+    while( i < N )
+      {
+	theta = drand48()*M_PI;
+	valfunc = drand48()*maxfunc; 
+	if ( valfunc < Sky_Function (theta,R)  )
+	  {
+	    alpha = drand48()*2*M_PI;
+	    x[i] = R*sin(theta)*cos(alpha);y[i] = R*sin(theta)*sin(alpha); z[i] = R*cos(theta);
+	    i += 1;
+	  }
+      
+	
+      }  
+    }
+  
+  else if ( strcmp(method,"inversion")==0 )
+    {
+      for (i=0; i<N; i++)
+	{
+	  alpha = drand48()*M_PI; 
+	  theta = acos(1 - 2*drand48() );
+	}
+    }
+
+  else
+    printf("%s","The method chosen is not valid\n"); 
+
+  
+  for (i=0; i<N; i++)
+    {
+      fwrite(&x[i], (size_t) sizeof(double) , 1 , stream_output);
+      fwrite(&y[i], (size_t) sizeof(double) , 1 , stream_output);
+      fwrite(&z[i], (size_t) sizeof(double) , 1 , stream_output);
+    }
+
+  
+  // In info: Little description of data, file_to_which_it_refer*, Number of points 
+  fprintf(stream_output_info, "%s\n", "Points (x,y,z) distributed uniformly along the sphere");
+  fprintf(stream_output_info, "%s %d\n", "Number_of_points:",N);
+  
+  
+  return 0; 
+}
+
+double Mean(double *p, int size, int initial)
+{
+  double mean;
+  int i;
+
+  for(i=initial; i<size; i++)
+    mean += p[i];
+
+  return mean/size;
+}
+
+double Deviation(double *p, int size, int initial)
+{
+  double deviation=0;
+  int i;
+  double mean;
+
+  mean = Mean(p, size, initial);
+  
+  for(i = initial; i < size; i++)
+    {
+      deviation += (p[i]-mean)*(p[i]-mean);
+    }
+
+  return sqrt(deviation/(size-1) );
+
+}
+
+double Function(double x)
+{
+  
+  return sin(x); //(x-3.5)*(x-3.5) + 1; 
+}
+
+
+int Add_Interval(double x1, double x2, double *x, int size)
+{
+  int i;
+  double copy1,copy2;
+  
+   
+  for (i=0 ; i<size+1; i++)
+    {
+
+      if (x[i]==x1)
+	{
+	  copy1 = x[i+1];
+	  x[i+1] = (x1+x2)/2.;
+	}
+      
+      else if(x[i]>x1)
+	{
+	  copy2 = x[i+1];
+	  x[i+1] = copy1;
+	  copy1 = copy2; 
+	}
+  
+    }
+    
+
+}
+
+int Mean_Dev_In_I(double a, double b, int Np, int Nd, double *fmean, double *fdev)
+{
+  int i, j;
+  double fs[Nd],x[Np]; 
+  double f=0; //to save the mean that is saved in succesive positions of f
+  
+  for(i=0; i<Nd; i++)
+    {
+      for(j=0; j<Np; j++)
+	{
+	  x[j] = a + (b-a)*drand48(); 
+	  f += Function(x[j]);  
+	}
+      fs[i] = f/Np;
+      f = 0; 
+    }
+   
+  *fmean = Mean(fs, Nd, 0);
+  *fdev = Deviation(fs, Nd, 0); 
+}
+
+
+
+int Map_Function_1D(double a, double b, int Np, int Nd, int Nmax, double tol,double *fs, double *xs)
+{
+  double interval[Nmax];
+  int state[Nmax]; //say if the interval must be checked or no 
+  int i=0, lenstate=1; //lenstate indicate numbe of intervals to be checked
+  lenstate= 1;
+  double fmean = 1, fdev = 1; //Parameters to say if the point represents well the interval
+  int j; //debuging counter
+  
+  for(i=0; i<Nmax;i++)
+    state[i] = 0;   
+  
+  interval[0] = a; interval[1] = b; state[0] = 0; //initialization
+
+  printf("%s","In Map_Function_insise_state\n");
+
+  i = 0; 
+  while(i<lenstate)
+    {
+      if( state[i] == 0)
+	{
+
+	  
+	  //printf("%p", &fmean); 
+	  Mean_Dev_In_I(interval[i], interval[i+1], Np, Nd, &fmean, &fdev);
+	  
+	  printf("fdev: %e, fmean:%e, in (%e,%e), interval:%d of %d\n", fdev, fmean, interval[i], interval[i+1] , i, lenstate);
+	  //why is fdev does not tending to 0
+	  //printf("%d\n",i); 
+	  
+	  if (fdev<tol)
+	    {
+	      state[i] = 1;
+	      fs[i] = fmean;
+	      xs[i] = (interval[i] + interval[i+1])/2.;
+	      i+=1;
+	    }
+	  
+	  else
+	    {
+	      lenstate += 1;
+	      Add_Interval(interval[i], interval[i+1], interval, lenstate );
+	    }
+	  
+	  
+	  
+	  if(lenstate > Nmax)
+	    {
+	      printf("%d number of intevals are not enough to map the function \n",Nmax-1);
+	      exit(0); 
+	    }
+	  
+
+	}
+
+    }
+
+  
+  
+  return lenstate; 
+}
+
+
+
+
+
+/*
+
+int Mapping_1D_function(double a, double b)
+{
+  int N = 1E5;
+  int Np = 100;
+  double xnew[Np], xold[N], fold[N]; 
+  int i;
+  size_t *p;
+  //gsl_sort_index(p, d, 1, nPuntos-1);
+  double mean[N], deviation[N];
+  int intervals = 1;
+  int state = 0;
+
+  
+  for (i=0; i<Np; i++)
+    {
+      xold[i] = a + (b-a)*drand48();
+      fold[i] = Function( xold[i] );
+    }
+  
+  
+  while(state==0)
+    {
+      for (i=0; i<intervals; i++)
+	{
+	  if( deviation[i]/mean[i] < 1E-4)
+	    state = 1;
+	  else
+	    state = 0; 
+	}
+
+      if(state==0)
+	intervals +=1; 
+      
+      
+
+    }
+  
+  
+  mean = Mean(fold,Np);
+  deviation = Deviation(fold, Np);
+  printf("Mean:%lf, Deviation:%lf", mean, deviation);
+
+  if ( (deviation/mean)<1E-4 )
+    fold
+  
+  
+  return 0; 
+}
+
+*/
