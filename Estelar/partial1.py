@@ -24,11 +24,16 @@ VmagMS = data2[nV:nV+1,:][0]
 ImagMS = data2[nI:nI+1,:][0]
 
 ### plot of the graph
+plt.title("HR Diagram")
 plt.ylim(10,25) 
 plt.xlim(-0.5,3) 
 plt.gca().invert_yaxis()
-plt.plot(Vmag-Imag, Vmag,'.')
-plt.plot(VmagMS-ImagMS, VmagMS,'r.')
+plt.plot(Vmag-Imag, Vmag,'.', label="All other stars")
+plt.plot(VmagMS-ImagMS, VmagMS,'r.', label="Main Sequence Stars")
+plt.legend(loc="best")
+plt.xlabel("V-I")
+plt.ylabel("V")
+plt.savefig("MS_diagram.png")
 plt.show()
 
 d = 8.8e3
@@ -41,18 +46,23 @@ minval = 12
 print(bins[minval])
 popt, pcov = curve_fit(lineal, np.log(bins[minval:-1])/np.log(10) , np.log(n[minval:])/np.log(10) )
 print(popt[0], popt[1])
-plt.plot( bins[minval:-1],  bins[minval:-1]**popt[0]*10**popt[1] , 'r-', label='fit from 0.6 Msun')
+print(pcov[0][0]**0.5)
+plt.plot( bins[minval:],  bins[minval:]**popt[0]*10**popt[1] , 'r-', label='fit from 0.6 Msun; γ =-2.2 +/- 0.1')
 
 
 minval = 0
 popt, pcov = curve_fit(lineal, np.log(bins[minval:-1])/np.log(10) , np.log(n[minval:])/np.log(10) )
 print(popt[0], popt[1])
-plt.plot( bins[minval:-1],  bins[minval:-1]**popt[0]*10**popt[1] , 'g-', label='general fit from 0.31 Msun')
+print(pcov[0][0]**0.5)
+plt.title("Iinitial Mass Function Approximation")
+plt.ylabel("Log( Nstars/dm[Msun] )")
+plt.xlabel( "log(M [Msun]) " )
+plt.plot( bins[minval:],  bins[minval:]**popt[0]*10**popt[1] , 'g-', label='general fit from 0.31 Msun; γ =-1.5 +/- 0.1')
 plt.legend(loc="best")
 
-
-
+print(bins[-1])
 plt.xscale('log')
 plt.yscale('log')
+plt.savefig("IMF.png")
 
 plt.show()
